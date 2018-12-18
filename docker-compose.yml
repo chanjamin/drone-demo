@@ -1,0 +1,35 @@
+version: '3'
+services:
+  drone-server:
+    image: drone/drone:0.8-alpine
+    ports:
+      - 443:443
+    # - "${PRO_PUBLIC_IP}:8000:8000"
+    volumes:
+      - drone-data:/var/lib/drone/:rw
+      - /home/nginx/1_jamin.site_bundle.crt:/etc/certs:rw
+    restart: always
+    environment:
+      - DRONE_SECRET=drone
+      - DRONE_OPEN=false
+      - DRONE_ADMIN=chanjamin
+      - DRONE_HOST=jamin.site
+      - DRONE_GITHUB=true
+      - DRONE_GITHUB_CLIENT=5a061d4df156a3e2343f
+      - DRONE_GITHUB_SECRET=d580a19f6106b30f75ab2c16e48563f116f6bef9
+      - DRONE_SERVER_CERT=/etc/certs/drone.domain.com.crt
+      - DRONE_SERVER_KEY=/etc/certs/drone.domain.com.key
+  drone-agent:
+    image: drone/agent:0.8-alpine
+    restart: always
+    depends_on:
+      - drone-server
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    environment:
+      - DRONE_SECRET=drone
+      - DRONE_SERVER=drone-server:9000
+    dns: 114.114.114.114
+
+volumes:
+  drone-data:
